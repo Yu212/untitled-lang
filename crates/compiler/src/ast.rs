@@ -93,6 +93,7 @@ asts! {
     ];
     Expr [
         BinaryExpr,
+        CmpChainExpr,
         PrefixExpr,
         ParenExpr,
         TupleExpr,
@@ -224,6 +225,18 @@ impl BinaryExpr {
         self.0.children_with_tokens()
             .filter_map(SyntaxElement::into_token)
             .find(|token| matches!(token.kind(), SyntaxKind::Plus | SyntaxKind::Minus | SyntaxKind::Star | SyntaxKind::Slash | SyntaxKind::Percent | SyntaxKind::Equals | SyntaxKind::EqEq | SyntaxKind::Neq | SyntaxKind::Ge | SyntaxKind::Le | SyntaxKind::Gt | SyntaxKind::Lt | SyntaxKind::And | SyntaxKind::Or))
+    }
+}
+
+impl CmpChainExpr {
+    pub fn exprs(&self) -> impl Iterator<Item = Expr> {
+        self.0.children().filter_map(Expr::cast)
+    }
+
+    pub fn ops(&self) -> impl Iterator<Item = SyntaxToken> {
+        self.0.children_with_tokens()
+            .filter_map(SyntaxElement::into_token)
+            .filter(|token| matches!(token.kind(), SyntaxKind::EqEq | SyntaxKind::Neq | SyntaxKind::Ge | SyntaxKind::Le | SyntaxKind::Gt | SyntaxKind::Lt))
     }
 }
 

@@ -23,7 +23,7 @@ struct Args {
         value_enum,
         value_delimiter = ',',
         default_values_t = [EmitFormat::Ir, EmitFormat::Submission, EmitFormat::Executable],
-        help = "Comma-separated list of output formats: syntaxx, ir, submission, executable",
+        help = "Comma-separated list of output formats: syntax, ir, submission, executable",
         hide_default_value = true,
         hide_possible_values = true,
     )]

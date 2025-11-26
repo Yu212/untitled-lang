@@ -62,6 +62,7 @@ pub enum SyntaxKind {
     CharLiteral,
     ArrayLiteral,
     BinaryExpr,
+    CmpChainExpr,
     PrefixExpr,
     ParenExpr,
     TupleExpr,

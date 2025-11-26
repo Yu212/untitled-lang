@@ -179,6 +179,7 @@ impl Database {
     pub fn lower_expr(&mut self, ast: Option<ast::Expr>) -> ExprIdx {
         let expr = match ast {
             Some(ast::Expr::BinaryExpr(ast)) => self.lower_binary_expr(ast),
+            Some(ast::Expr::CmpChainExpr(ast)) => self.lower_cmp_chain_expr(ast),
             Some(ast::Expr::PrefixExpr(ast)) => self.lower_prefix_expr(ast),
             Some(ast::Expr::ParenExpr(ast)) => return self.lower_expr(ast.expr()),
             Some(ast::Expr::TupleExpr(ast)) => self.lower_tuple_expr(ast),
@@ -236,6 +237,51 @@ impl Database {
             rhs,
             range: ast.syntax().text_range(),
         }
+    }
+
+    pub fn lower_cmp_chain_expr(&mut self, ast: ast::CmpChainExpr) -> Expr {
+        let range = ast.syntax().text_range();
+        self.resolve_ctx.push_scope(false);
+
+        let ops: Vec<_> = ast.ops().collect();
+        let mut exprs_idx = Vec::new();
+        let mut stmts = Vec::new();
+
+        for expr_ast in ast.exprs() {
+            let expr_idx = self.lower_expr(Some(expr_ast));
+            let name = EcoString::from(format!("__cmp_tmp{}", self.resolve_ctx.variables.len()));
+            let var_id = self.resolve_ctx.define_var(name, None, None);
+            let stmt_idx = self.stmts.alloc(Stmt::LetStmt { var_id: Some(var_id), expr: expr_idx, range });
+            stmts.push(stmt_idx);
+            let ref_idx = self.exprs.alloc(Expr::Ref { var_id: Some(var_id), range });
+            exprs_idx.push(ref_idx);
+        }
+
+        let mut result = None;
+        for i in 0..ops.len() {
+            let op = match ops[i].kind() {
+                SyntaxKind::EqEq => BinaryOp::EqEq,
+                SyntaxKind::Neq => BinaryOp::Neq,
+                SyntaxKind::Ge => BinaryOp::Ge,
+                SyntaxKind::Le => BinaryOp::Le,
+                SyntaxKind::Gt => BinaryOp::Gt,
+                SyntaxKind::Lt => BinaryOp::Lt,
+                _ => unreachable!(),
+            };
+            let lhs = exprs_idx[i];
+            let rhs = exprs_idx[i + 1];
+            let cmp = self.exprs.alloc(Expr::Binary { op, lhs, rhs, range });
+            result = Some(if let Some(prev) = result {
+                self.exprs.alloc(Expr::Binary { op: BinaryOp::And, lhs: prev, rhs: cmp, range })
+            } else {
+                cmp
+            });
+        }
+
+        let expr_stmt = self.stmts.alloc(Stmt::ExprStmt { expr: result.unwrap(), range });
+        stmts.push(expr_stmt);
+        self.resolve_ctx.pop_scope();
+        Expr::Block { stmts, range }
     }
     pub fn lower_prefix_expr(&mut self, ast: ast::PrefixExpr) -> Expr {
         let expr = self.lower_expr(ast.expr());

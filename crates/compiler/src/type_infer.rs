@@ -62,8 +62,9 @@ impl TypeInfer<'_> {
             let var_info = self.db.resolve_ctx.get_var(var_id);
             let inferred = self.inferred.substitute(ty);
             if inferred.contains_ty_var() {
-                let range = var_info.ident.clone().unwrap().range;
-                self.diagnostics.push(Diagnostic::new(DiagnosticKind::TypeInferenceFailure, range));
+                if let Some(ident) = &var_info.ident {
+                    self.diagnostics.push(Diagnostic::new(DiagnosticKind::TypeInferenceFailure, ident.range));
+                }
             } else {
                 var_info.ty.replace(inferred);
             }
@@ -101,8 +102,6 @@ impl TypeInfer<'_> {
         let ty1 = self.inferred.substitute(ty1);
         let ty2 = self.inferred.substitute(ty2);
         match (&ty1, &ty2) {
-            (_, &Type::Invalid) => Some(ty1),
-            (&Type::Invalid, _) => Some(ty2),
             (&Type::TyVar(id1), &Type::TyVar(id2)) => {
                 if id1 != id2 {
                     self.inferred.add_subst(id1, ty2.clone());
@@ -117,6 +116,8 @@ impl TypeInfer<'_> {
                 self.inferred.add_subst(id, ty1.clone());
                 Some(ty1)
             },
+            (_, &Type::Invalid) => Some(ty1),
+            (&Type::Invalid, _) => Some(ty2),
             (&Type::Unit, &Type::Unit) => Some(Type::Unit),
             (&Type::Int, &Type::Int) => Some(Type::Int),
             (&Type::Float, &Type::Float) => Some(Type::Float),

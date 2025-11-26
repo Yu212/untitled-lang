@@ -1,0 +1,25 @@
+---
+source: crates/compiler/src/grammar.rs
+assertion_line: 462
+expression: "parse(\"0 < a < 1;\")"
+---
+(
+    Root@0..10
+      ExprStmt@0..9
+        CmpChainExpr@0..9
+          IntLiteral@0..2
+            Integer@0..1 "0"
+            Whitespace@1..2 " "
+          Lt@2..3 "<"
+          Whitespace@3..4 " "
+          RefExpr@4..6
+            Ident@4..5 "a"
+            Whitespace@5..6 " "
+          Lt@6..7 "<"
+          Whitespace@7..8 " "
+          IntLiteral@8..9
+            Integer@8..9 "1"
+      Semicolon@9..10 ";"
+    ,
+    [],
+)

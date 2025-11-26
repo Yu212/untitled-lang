@@ -6,6 +6,10 @@ use crate::token_set::TokenSet;
 const RECOVERY_SET: TokenSet = TokenSet::new(&[SyntaxKind::Semicolon]);
 const BOOL_SET: TokenSet = TokenSet::new(&[SyntaxKind::TrueKw, SyntaxKind::FalseKw]);
 
+fn is_compare_token(kind: SyntaxKind) -> bool {
+    matches!(kind, SyntaxKind::EqEq | SyntaxKind::Neq | SyntaxKind::Ge | SyntaxKind::Le | SyntaxKind::Gt | SyntaxKind::Lt)
+}
+
 fn comma_list<F>(p: &mut Parser<'_>, end: SyntaxKind, required: bool, mut f: F) -> bool
 where
     F: FnMut(&mut Parser<'_>),
@@ -211,7 +215,15 @@ pub fn expr(p: &mut Parser<'_>, min_binding_power: i8) -> Option<(CompletedMarke
             lhs = m.complete(p, SyntaxKind::IndexExpr);
         } else {
             let rhs = expr(p, right_binding_power);
-            lhs = m.complete(p, SyntaxKind::BinaryExpr);
+            if matches!(op, OpKind::BinaryOp(BinaryOp::EqEq | BinaryOp::Neq | BinaryOp::Ge | BinaryOp::Le | BinaryOp::Gt | BinaryOp::Lt)) && is_compare_token(p.current()) {
+                while is_compare_token(p.current()) {
+                    p.bump();
+                    expr(p, right_binding_power);
+                }
+                lhs = m.complete(p, SyntaxKind::CmpChainExpr);
+            } else {
+                lhs = m.complete(p, SyntaxKind::BinaryExpr);
+            }
             if rhs.is_none() {
                 break;
             }
@@ -443,5 +455,10 @@ mod tests {
     #[test]
     fn type_spec() {
         insta::assert_debug_snapshot!(parse("let a: (int[]?, str, (char?, unit)) = 0;"));
+    }
+
+    #[test]
+    fn cmp_chain() {
+        insta::assert_debug_snapshot!(parse("0 < a < 1;"));
     }
 }
