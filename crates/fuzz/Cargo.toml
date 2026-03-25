@@ -11,5 +11,5 @@ name = "main"
 path = "fuzz_targets/main.rs"
 
 [dependencies]
-libfuzzer-sys = "0.4.7"
+libfuzzer-sys = "0.4.12"
 zoisite = { path = "../compiler" }

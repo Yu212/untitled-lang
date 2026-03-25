@@ -43,7 +43,7 @@ impl TypeInferResult {
 }
 
 impl TypeInfer<'_> {
-    pub fn new(db: &mut Database) -> TypeInfer {
+    pub fn new(db: &mut Database) -> TypeInfer<'_> {
         TypeInfer {
             db,
             diagnostics: Vec::new(),

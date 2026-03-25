@@ -83,7 +83,7 @@ pub fn add_builtins(cmp: &mut Compiler) -> CompileResult<()> {
         let scanf_ptr = cmp.builder.build_array_malloc(i8_type, param.into_int_value(), "str")?;
         cmp.builder.build_call(scanf_function, &[format_str.as_pointer_value().into(), scanf_ptr.into()], "")?;
         let call_site = cmp.builder.build_call(strlen_function, &[scanf_ptr.into()], "")?;
-        let len = call_site.try_as_basic_value().unwrap_left();
+        let len = call_site.try_as_basic_value().unwrap_basic();
         let result = cmp.build_str_struct(len.into_int_value(), scanf_ptr)?;
         cmp.builder.build_return(Some(&result))?;
         Ok(())
@@ -112,7 +112,7 @@ pub fn add_builtins(cmp: &mut Compiler) -> CompileResult<()> {
         let sprintf_ptr = cmp.builder.build_array_malloc(i8_type, i64_type.const_int(21, false), "str")?;
         cmp.builder.build_call(sprintf_function, &[sprintf_ptr.into(), format_str.as_pointer_value().into(), param.into()], "")?;
         let call_site = cmp.builder.build_call(strlen_function, &[sprintf_ptr.into()], "")?;
-        let len = call_site.try_as_basic_value().unwrap_left();
+        let len = call_site.try_as_basic_value().unwrap_basic();
         let result = cmp.build_str_struct(len.into_int_value(), sprintf_ptr)?;
         cmp.builder.build_return(Some(&result))?;
         Ok(())

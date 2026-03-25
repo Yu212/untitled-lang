@@ -158,7 +158,7 @@ mod tests {
     use crate::lexer::Lexer;
     use crate::token::Token;
 
-    fn tokenize(text: &str) -> (Vec<Token>, Vec<Diagnostic>) {
+    fn tokenize(text: &str) -> (Vec<Token<'_>>, Vec<Diagnostic>) {
         let lexer = Lexer::new(text);
         lexer.tokenize()
     }

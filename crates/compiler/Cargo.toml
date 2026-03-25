@@ -9,8 +9,8 @@ license-file = "../../LICENSE"
 categories = ["compilers"]
 
 [dependencies]
-llvm-sys = "160"
-inkwell = { version = "0.6.0", features = ["llvm16-0"] }
+llvm-sys = "211.0.0"
+inkwell = { version = "0.8.0", features = ["llvm21-1"] }
 rowan = "0.16.1"
 unscanny = "0.1.0"
 drop_bomb = "0.1.5"

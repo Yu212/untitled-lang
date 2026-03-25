@@ -4,15 +4,18 @@
     "customizations": {
         "vscode": {
             "extensions": [
-                "saoudrizwan.claude-dev"
+                "openai.chatgpt"
             ]
         }
     },
+    "mounts": [
+        "source=${localEnv:HOME}/.codex,target=/tmp/codex-host,readonly,type=bind"
+    ],
     "remoteUser": "root",
     "overrideFeatureInstallOrder": [
         "ghcr.io/rocker-org/devcontainer-features/apt-packages",
         "ghcr.io/devcontainers/features/rust",
-        "ghcr.io/rapidsai/devcontainers/features/llvm",
+        "ghcr.io/devcontainers-community/features/llvm",
         "ghcr.io/devcontainers/features/node"
     ],
     "features": {
@@ -24,11 +27,12 @@
         },
         "ghcr.io/devcontainers/features/node:1": {},
         "ghcr.io/rapidsai/devcontainers/features/rust:25": {
-            "version": "nightly-2025-04-29"
+            "version": "stable"
         },
-        "ghcr.io/rapidsai/devcontainers/features/llvm:25": {
-            "version": "16"
+        "ghcr.io/devcontainers-community/features/llvm": {
+            "version": "21"
         }
     },
-    "postCreateCommand": "cargo install cargo-fuzz cargo-insta"
+    "postCreateCommand": "bash .devcontainer/post-create.sh",
+    "postStartCommand": "bash .devcontainer/post-start.sh"
 }

@@ -347,7 +347,7 @@ impl<'ctx> Compiler<'ctx> {
                     .map(|&expr| self.compile_expr_idx(expr).map(BasicMetadataValueEnum::from))
                     .collect::<Result<_, _>>()?;
                 let call_site = self.builder.build_call(function, &args, "tmp")?;
-                let ret_val = call_site.try_as_basic_value().left().ok_or(self.compiler_error("Return value is not a basic value"))?;
+                let ret_val = call_site.try_as_basic_value().basic().ok_or(self.compiler_error("Return value is not a basic value"))?;
                 Ok(ret_val)
             },
             Expr::Index { main_expr, index_expr, range: _ } => {
